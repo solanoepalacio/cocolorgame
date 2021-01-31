@@ -1,0 +1,11 @@
+.container {
+    margin: 16px 0;
+}
+
+.imageContainer {
+    width: 820px;
+    height: 620px;
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
