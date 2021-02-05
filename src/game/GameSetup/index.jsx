@@ -3,8 +3,16 @@ import React, { useState } from 'react';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import { Button, Typography, TextField, Menu } from '@material-ui/core';
+import FavoriteIcon from '@material-ui/icons/Favorite';
 import PopupState, { bindTrigger, bindMenu } from 'material-ui-popup-state';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
+import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
+import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
+import SpaceBarIcon from '@material-ui/icons/SpaceBar';
+import MouseIcon from '@material-ui/icons/Mouse';
 
+import styles from './game-setup.module.css'
 import { makeStyles } from '@material-ui/core/styles';
 
 import Box from '../../components/ColorBox';
@@ -54,61 +62,56 @@ const useStyles = makeStyles((theme) => ({
   menuGrid: {
     padding: '16px 32px',
     overflow: 'hidden',
+  },
+  clickable: {
+    cursor: 'pointer'
   }
 }));
 
-const ColorPicker = ({ interactionName, color, setColor }) => {
+const ColorPicker = ({ interactionName, color, setColor, direction = "row" }) => {
+  const iconsByInteractionName = {
+    ArrowUp: ArrowUpwardIcon,
+    ArrowDown: ArrowDownwardIcon,
+    ArrowLeft: ArrowBackIcon,
+    ArrowRight: ArrowForwardIcon,
+    Space: SpaceBarIcon,
+    Click: MouseIcon,
+  };
+
   const classes = useStyles();
+  const Icon = iconsByInteractionName[interactionName];
+  const fontSize = '52px';
   return (
-    <Grid container justify="space-around" alignItems="center" item>
-      <Grid container alignItems="center">
-        <Grid item xs={3}><Box color={color} /></Grid>
-        <Grid item xs={6}>{interactionName}</Grid>
-        <Grid item xs={3}>
-          <PopupState variant="popover" popupId='somecrazyid'>
-            {(popupState) => (
-              <React.Fragment>
-                <Button color="primary" {...bindTrigger(popupState)}>Change</Button>
-                <Menu className={classes.modalPaper} {...bindMenu(popupState)}>
-                  <Grid container direction="column" spacing={3} className={classes.menuGrid}>
-                    <Grid item xs={12}>
-                      <Typography variant="h5" id="transition-modal-title">Select Color:</Typography>
-                    </Grid>
-                    <Grid container spacing={2} item xs={12}>
-                      {Object.keys(imagesByColor).map(color => {
-                        return (
-                          <Grid key={color} item xs onClick={() => setColor(color) && popupState.close()}>
-                            <Box color={color} />
-                          </Grid>
-                        )
-                      })}
-                    </Grid>
-                  </Grid>
-                </Menu>
-              </React.Fragment>)}
-          </PopupState>
-        </Grid>
-      </Grid>
+    <Grid container justify="space-around" alignItems="center" justify={direction === "column" ? "center" : undefined} item>
+      <PopupState variant="popover" popupId='somecrazyid'>
+        {(popupState) => (
+          <React.Fragment>
+            <Paper className={[classes.paper, classes.clickable].join(' ')} {...bindTrigger(popupState)}>
+              <Grid container alignItems="center" direction={direction}>
+                <Icon style={{ color, fontSize }} />
+              </Grid>
+            </Paper>
+            <Menu className={classes.modalPaper} {...bindMenu(popupState)}>
+              <Grid container direction="column" spacing={3} className={classes.menuGrid}>
+                <Grid item xs={12}>
+                  <Typography variant="h5" id="transition-modal-title">Select Color:</Typography>
+                </Grid>
+                <Grid container spacing={2} item xs={12}>
+                  {Object.keys(imagesByColor).map(color => {
+                    return (
+                      <Grid key={color} item xs onClick={() => setColor(color) || popupState.close()}>
+                        <Box color={color} />
+                      </Grid>
+                    )
+                  })}
+                </Grid>
+              </Grid>
+            </Menu>
+          </React.Fragment>)}
+      </PopupState>
     </Grid>
   );
 };
-
-const ColorConfigColumn = ({ colorConfigs, setInteraction }) => {
-  const classes = useStyles();
-  return colorConfigs.map(([interaction, color]) => {
-    return (
-      <Grid item xs={6} key={[interaction, color].join('-')}>
-        <Paper className={classes.paper}>
-          <Grid container spacing={1}>
-            <Grid container direction="column" spacing={2} item xs={12}>
-              <ColorPicker interactionName={interaction} color={color} setColor={(newColor) => setInteraction(interaction, newColor)} />
-            </Grid>
-          </Grid>
-        </Paper>
-      </Grid>
-    );
-  });
-}
 
 export default function GameSetup({ onSetupDone }) {
   const [boardColorConfig, setBoardColorConfig] = useState({
@@ -124,7 +127,7 @@ export default function GameSetup({ onSetupDone }) {
 
   const classes = useStyles();
 
-  const [leftColors, rightColors] = _.chunk(Object.entries(boardColorConfig), 3);
+  // const [leftColors, rightColors] = _.chunk(Object.entries(boardColorConfig), 3);
 
   const setInteraction = (interaction, color) => {
     setBoardColorConfig({
@@ -136,7 +139,7 @@ export default function GameSetup({ onSetupDone }) {
   return (
     <Grid container spacing={3} justify="center" alignItems="center" item xs={12}>
       <Grid container justify="center" item xs={12}>
-          <Typography variant="h2">Game Setup</Typography>
+        <Typography variant="h2">Game Setup</Typography>
       </Grid>
       <Grid container spacing={3} justify="center" alignItems="center">
         <Grid item xs={6}>
@@ -145,12 +148,64 @@ export default function GameSetup({ onSetupDone }) {
           </Paper>
         </Grid>
 
-        <Grid container spacing={2} item xs={6}>
-          <Grid container spacing={2} item xs={12}>
-            {boardColorConfig && <ColorConfigColumn colorConfigs={leftColors} setInteraction={setInteraction} />}
-            {boardColorConfig && <ColorConfigColumn colorConfigs={rightColors} setInteraction={setInteraction} />}
-          </Grid>
+        <Grid container spacing={7} item xs={6}>
+          <Grid container item xs={12} justify="center">
 
+            {/* Arrow Buttons */}
+            <Grid container spacing={2} item xs={6}>
+              <Grid container item xs={12} justify="center">
+                <ColorPicker
+                  direction="column"
+                  interactionName="ArrowUp"
+                  color={boardColorConfig['ArrowUp']}
+                  setColor={(newColor) => setInteraction("ArrowUp", newColor)}
+                />
+              </Grid>
+              <Grid container item xs={12} justify="center">
+                <Grid item justify="flex-end">
+                  <ColorPicker
+                    interactionName="ArrowLeft"
+                    color={boardColorConfig["ArrowLeft"]}
+                    setColor={(newColor => setInteraction("ArrowLeft", newColor))}
+                  />
+                </Grid>
+                <Grid xs={3} />
+                <Grid item justify="flex-start">
+                  <ColorPicker
+                    interactionName="ArrowRight"
+                    color={boardColorConfig["ArrowRight"]}
+                    setColor={(newColor => setInteraction("ArrowRight", newColor))}
+                  />
+                </Grid>
+              </Grid>
+              <Grid container item xs={12} justify="center" >
+                <ColorPicker
+                  direction="column"
+                  interactionName="ArrowDown"
+                  color={boardColorConfig['ArrowDown']}
+                  setColor={(newColor) => setInteraction("ArrowDown", newColor)}
+                />
+              </Grid>
+            </Grid>
+
+            {/* Space + Click */}
+            <Grid container spacing={2} item xs={3}>
+              <Grid container item xs={6}>
+                <ColorPicker
+                  interactionName="Space"
+                  color={boardColorConfig['Space']}
+                  setColor={(newColor) => setInteraction("Space", newColor)}
+                />
+              </Grid>
+              <Grid container item xs={6}>
+                <ColorPicker
+                  interactionName="Click"
+                  color={boardColorConfig['Click']}
+                  setColor={(newColor) => setInteraction("Click", newColor)}
+                />
+              </Grid>
+            </Grid>
+          </Grid>
 
           <Grid item xs={12}>
             <Paper className={classes.paper}>
@@ -178,6 +233,11 @@ export default function GameSetup({ onSetupDone }) {
                 </Button>
         </Grid>
       </Grid>
+      <div className={styles.watermarkLayout}>
+        <Grid container justify="center" alignItems="center">
+          <Typography variant="subtitle1" >Coded with&nbsp;</Typography><FavoriteIcon style={{ color: 'red' }} /><Typography>&nbsp;for Cocó</Typography>
+        </Grid>
+      </div>
     </Grid>
   );
 };
