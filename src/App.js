@@ -36,7 +36,7 @@ function App() {
 
   return gameScoreBoard
     ? <ScoreBoard scoreBoard={gameScoreBoard} restart={restart} />
-    : gameSetup
+    : gameSetup && !gameSetup.transitionActive
     ? <GamePlay {...{ gameSetup, restart, gameOver }} />
     : <GameSetup onSetupDone={ setGameSetup }  />;
 }

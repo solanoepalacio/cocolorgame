@@ -1,3 +1,27 @@
 body {
   background: #f5f5f5;
 }
+
+
+.hit-animation {
+  animation: grow 0.65s 0.05s;
+  opacity: 0;
+}
+
+@keyframes grow {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+
+  75% {
+    opacity: 0.85;
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1) translateY(-160px);
+
+  }
+}
+

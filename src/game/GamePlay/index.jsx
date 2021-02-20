@@ -2,8 +2,7 @@ import { Button, Grid, Typography } from '@material-ui/core';
 import _ from 'lodash';
 import { useEffect, useState } from "react";
 import styles from './game-play.module.css';
-
-console.log('styles', styles);
+import FrameTransition from '../../components/FrameTransition';
 
 const getInteractionName = (event) => {
   const { type, code } = event;
@@ -25,21 +24,35 @@ const updateScoreBoard = (scoreBoard, color, hit) => {
   return newScoreBoard;
 };
 
+const createTransitionStatus = () => {
+  return { active: false, hit: false };
+};
+
 export default function GamePlay({ gameSetup: { boardColorConfig, questionSet }, restart, gameOver }) {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [scoreBoard, setScoreBoard] = useState(buildScore(questionSet));
-
+  const [transitionStatus, setTransitionStatus] = useState(createTransitionStatus())
   const question = _.get(questionSet, questionIndex);
 
-  const onInteraction = (event) => {
+  const onInteraction = async (event) => {
+    if (transitionStatus.active) return;
+
     const interactionName = getInteractionName(event);
     if (!Object.keys(boardColorConfig).includes(interactionName) || !question) return;
 
-    const colorPicked = _.get(boardColorConfig, getInteractionName(event));
-    const newScoreBoard = updateScoreBoard(scoreBoard, question.color, colorPicked === question.color);
+    const colorPicked = _.get(boardColorConfig, interactionName);
+
+    const isHit = colorPicked === question.color;
+
+    const newScoreBoard = updateScoreBoard(scoreBoard, question.color, isHit);
     setScoreBoard(newScoreBoard);
 
-    setQuestionIndex(questionIndex + 1);
+    setTransitionStatus({ active: true, hit: isHit });
+    setTimeout(() => setQuestionIndex(questionIndex + 1), 0);
+
+    const frameTransitionTime = isHit ? 900 : 120;
+
+    setTimeout(() => setTransitionStatus({ active: false }), frameTransitionTime);
   };
 
   useEffect(() => {
@@ -51,7 +64,7 @@ export default function GamePlay({ gameSetup: { boardColorConfig, questionSet },
     }
   });
 
-  if (!question) {
+  if (!question && !transitionStatus.active) {
     gameOver(scoreBoard);
     return null;
   }
@@ -67,8 +80,10 @@ export default function GamePlay({ gameSetup: { boardColorConfig, questionSet },
         <Grid container item xs={8} justify="flex-end">
           <Typography>{questionIndex} / {questionSet.length}</Typography>
         </Grid>
-        <Grid container item xs={12} justify="center" alignItems="center" >
-          <div className={styles.imageContainer} style={{ backgroundImage: `url(${question.image})` }}></div>
+        <Grid className={ styles.container} container item xs={12} justify="center" alignItems="center" >
+            {
+              transitionStatus.active ? <FrameTransition isHit={transitionStatus.hit}/> : <div className={styles.imageContainer} style={{ backgroundImage: `url(${question.image})` }}></div>
+            }
         </Grid>
         <Grid container item xs={12} justify="center">
           <Button variant="contained" color="secondary" onClick={handleRestart}>restart</Button>
