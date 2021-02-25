@@ -33,16 +33,16 @@ export default function GamePlay({ gameSetup: { boardColorConfig, questionSet },
   const [scoreBoard, setScoreBoard] = useState(buildScore(questionSet));
   const [transitionStatus, setTransitionStatus] = useState(createTransitionStatus())
   const question = _.get(questionSet, questionIndex);
-
+  // console.log('gameplay received boardColorConfig', boardColorConfig);
   const onInteraction = async (event) => {
     if (transitionStatus.active) return;
-
+    console.log('comparing with boardColorConfig', boardColorConfig);
     const interactionName = getInteractionName(event);
     if (!Object.keys(boardColorConfig).includes(interactionName) || !question) return;
 
     const colorPicked = _.get(boardColorConfig, interactionName);
-
     const isHit = colorPicked === question.color;
+    console.log('question, pick, hit', question.color, colorPicked, isHit);
 
     const newScoreBoard = updateScoreBoard(scoreBoard, question.color, isHit);
     setScoreBoard(newScoreBoard);

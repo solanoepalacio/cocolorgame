@@ -122,6 +122,7 @@ export default function GameSetup({ onSetupDone }) {
     Space: 'yellow',
     Click: 'orange',
   });
+  console.log('new board color config', boardColorConfig);
 
   const [questionsCount, setQuestionsCount] = useState(10);
 
@@ -130,6 +131,7 @@ export default function GameSetup({ onSetupDone }) {
   // const [leftColors, rightColors] = _.chunk(Object.entries(boardColorConfig), 3);
 
   const setInteraction = (interaction, color) => {
+    console.log('setting interaction', interaction, color);
     setBoardColorConfig({
       ...boardColorConfig,
       [interaction]: color,
@@ -235,7 +237,7 @@ export default function GameSetup({ onSetupDone }) {
       </Grid>
       <div className={styles.watermarkLayout}>
         <Grid container justify="center" alignItems="center">
-          <Typography variant="subtitle1" >Coded with&nbsp;</Typography><FavoriteIcon style={{ color: 'red' }} /><Typography>&nbsp;for Cocó</Typography>
+          <Typography variant="subtitle1" style={{color: "gray"}} >Coded with&nbsp;</Typography><FavoriteIcon style={{ color: 'black' }} /><Typography style={{color: "gray"}}>&nbsp;for Cocó</Typography>
         </Grid>
       </div>
     </Grid>
