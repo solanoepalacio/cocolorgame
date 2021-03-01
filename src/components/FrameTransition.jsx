@@ -8,7 +8,7 @@ const CheckAnimation = () => {
 };
 
 const CrossAnimation = () => {
-  return <CloseIcon style={{ color: 'blue', fontSize: '85px' }} />
+  return <CloseIcon style={{ color: '#11D9A9', fontSize: '85px' }} />
 }
 
 export default function FrameTransition({ isHit }) {
