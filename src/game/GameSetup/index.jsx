@@ -34,13 +34,18 @@ const pickRandom = (array) => array.splice((Math.random() * array.length) | 0, 1
 
 const createGame = (questionsCount, boardColorConfig) => {
   const selectedColors = Object.values(boardColorConfig);
-  const gameColors = _.pick(_.cloneDeep(imagesByColor), selectedColors);
+  const imagesByColorClone = _.pick(_.cloneDeep(imagesByColor), selectedColors);
 
-  return _.filter(_.range(questionsCount).map(() => {
-    const color = _.sample(selectedColors);
-    const image = pickRandom(gameColors[color]);
-    return image ? { color, image } : null;
-  }));
+  const gameQuestions = _.reduce(selectedColors, (questions, color) => {
+    const colorImages = _.range(questionsCount).map(() => {
+      return { color, image: pickRandom(imagesByColorClone[color]) };
+    });
+
+    return questions.concat(colorImages);
+  }, []);
+  const a = _.shuffle(gameQuestions);
+  console.log('gamequestions', a);
+  return a;
 };
 
 const useStyles = makeStyles((theme) => ({
@@ -124,11 +129,10 @@ export default function GameSetup({ onSetupDone }) {
   });
   console.log('new board color config', boardColorConfig);
 
-  const [questionsCount, setQuestionsCount] = useState(10);
+  const [ questionsCount, setQuestionsCount ] = useState(4);
+  const [ frameTransitionDelay, setFrameTransitionDelay ] = useState(120);
 
   const classes = useStyles();
-
-  // const [leftColors, rightColors] = _.chunk(Object.entries(boardColorConfig), 3);
 
   const setInteraction = (interaction, color) => {
     console.log('setting interaction', interaction, color);
@@ -211,17 +215,31 @@ export default function GameSetup({ onSetupDone }) {
 
           <Grid item xs={12}>
             <Paper className={classes.paper}>
-              <Grid container justify="space-around" item xs={12}>
-                <Typography>Pictures amount to show:</Typography>
-                <TextField
-                  color="secondary"
-                  type="number"
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  value={questionsCount}
-                  onChange={(e) => setQuestionsCount(e.target.value)}
-                />
+              <Grid container>
+                <Grid container justify="space-around" item xs={6}>
+                  <Typography>Pictures/Color:</Typography>
+                  <TextField
+                    color="secondary"
+                    type="number"
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    value={questionsCount}
+                    onChange={(e) => setQuestionsCount(e.target.value)}
+                  />
+                </Grid>
+                <Grid container justify="space-around" item xs={6}>
+                  <Typography>Frame Transition Delay (ms):</Typography>
+                  <TextField
+                    color="secondary"
+                    type="number"
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    value={frameTransitionDelay}
+                    onChange={(e) => setFrameTransitionDelay(e.target.value)}
+                  />
+                </Grid>
               </Grid>
             </Paper>
           </Grid>
@@ -231,13 +249,13 @@ export default function GameSetup({ onSetupDone }) {
           <Button
             variant="contained"
             color="secondary"
-            onClick={() => onSetupDone({ questionSet: createGame(questionsCount, boardColorConfig), boardColorConfig })}>start game
+            onClick={() => onSetupDone({ questionSet: createGame(questionsCount, boardColorConfig), boardColorConfig, frameTransitionDelay })}>start game
                 </Button>
         </Grid>
       </Grid>
       <div className={styles.watermarkLayout}>
         <Grid container justify="center" alignItems="center">
-          <Typography variant="subtitle1" style={{color: "gray"}} >Coded with&nbsp;</Typography><FavoriteIcon style={{ color: 'black' }} /><Typography style={{color: "gray"}}>&nbsp;for Cocó</Typography>
+          <Typography variant="subtitle1" style={{ color: "gray" }} >Coded with&nbsp;</Typography><FavoriteIcon style={{ color: 'black' }} /><Typography style={{ color: "gray" }}>&nbsp;for Cocó</Typography>
         </Grid>
       </div>
     </Grid>

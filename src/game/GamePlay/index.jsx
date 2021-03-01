@@ -28,7 +28,7 @@ const createTransitionStatus = () => {
   return { active: false, hit: false };
 };
 
-export default function GamePlay({ gameSetup: { boardColorConfig, questionSet }, restart, gameOver }) {
+export default function GamePlay({ gameSetup: { boardColorConfig, questionSet, frameTransitionDelay }, restart, gameOver }) {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [scoreBoard, setScoreBoard] = useState(buildScore(questionSet));
   const [transitionStatus, setTransitionStatus] = useState(createTransitionStatus())
@@ -50,7 +50,7 @@ export default function GamePlay({ gameSetup: { boardColorConfig, questionSet },
     setTransitionStatus({ active: true, hit: isHit });
     setTimeout(() => setQuestionIndex(questionIndex + 1), 0);
 
-    const frameTransitionTime = isHit ? 900 : 120;
+    const frameTransitionTime = Math.max(frameTransitionDelay, isHit ? 900 : 120);
 
     setTimeout(() => setTransitionStatus({ active: false }), frameTransitionTime);
   };
@@ -73,7 +73,7 @@ export default function GamePlay({ gameSetup: { boardColorConfig, questionSet },
     e.stopPropagation();
     restart();
   };
-
+  console.log('next question is', question);
   return (
     <div className={styles.container}>
       <Grid container spacing={4} justify="center">
