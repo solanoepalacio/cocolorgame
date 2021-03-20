@@ -17,9 +17,9 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function ScoreBoard({ scoreBoard, restart }) {
+export default function ScoreBoard({ scoreboard, restart }) {
   const classes = useStyles();
-  const { totalHits, totalMisses } = Object.values(scoreBoard).reduce(({ totalHits, totalMisses }, { hits, misses }) => {
+  const { totalHits, totalMisses } = Object.values(scoreboard).reduce(({ totalHits, totalMisses }, { hits, misses }) => {
     return {
       totalHits: totalHits + hits,
       totalMisses: totalMisses + misses,
@@ -33,7 +33,7 @@ export default function ScoreBoard({ scoreBoard, restart }) {
           <Grid container direction="column" alignItems="center" spacing={3}>
             <Typography variant="h2" style={{ marginBottom: '16px' }}>Results:</Typography>
             <Grid container direction="column" spacing={5} item>
-              {Object.entries(scoreBoard).map(([color, { total, hits, misses }]) => {
+              {Object.entries(scoreboard).map(([color, { total, hits, misses }]) => {
                 return (
                   <div style={{ marginBottom: "16px" }}>
                     <Divider></Divider>

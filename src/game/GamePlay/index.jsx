@@ -15,8 +15,8 @@ const buildScore = (questionSet) => _.reduce(questionSet, (scoreByColors, { colo
   return scoreByColors;
 }, {});
 
-const updateScoreBoard = (scoreBoard, color, hit) => {
-  const newScoreBoard = _.cloneDeep(scoreBoard);
+const updateScoreBoard = (scoreboard, color, hit) => {
+  const newScoreBoard = _.cloneDeep(scoreboard);
   const colorScore = _.get(newScoreBoard, color);
   const addTo = hit ? 'hits' : 'misses';
   const currentValue = colorScore[addTo];
@@ -30,7 +30,7 @@ const createTransitionStatus = () => {
 
 export default function GamePlay({ gameSetup: { boardColorConfig, questionSet, frameTransitionDelay }, restart, gameOver }) {
   const [questionIndex, setQuestionIndex] = useState(0);
-  const [scoreBoard, setScoreBoard] = useState(buildScore(questionSet));
+  const [scoreboard, setScoreBoard] = useState(buildScore(questionSet));
   const [transitionStatus, setTransitionStatus] = useState(createTransitionStatus())
   const question = _.get(questionSet, questionIndex);
   // console.log('gameplay received boardColorConfig', boardColorConfig);
@@ -44,7 +44,7 @@ export default function GamePlay({ gameSetup: { boardColorConfig, questionSet, f
     const isHit = colorPicked === question.color;
     console.log('question, pick, hit', question.color, colorPicked, isHit);
 
-    const newScoreBoard = updateScoreBoard(scoreBoard, question.color, isHit);
+    const newScoreBoard = updateScoreBoard(scoreboard, question.color, isHit);
     setScoreBoard(newScoreBoard);
 
     setTransitionStatus({ active: true, hit: isHit });
@@ -65,7 +65,7 @@ export default function GamePlay({ gameSetup: { boardColorConfig, questionSet, f
   });
 
   if (!question && !transitionStatus.active) {
-    gameOver(scoreBoard);
+    gameOver(scoreboard);
     return null;
   }
 

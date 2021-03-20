@@ -5,23 +5,25 @@ import './App.css';
 import GameSetup from './game/GameSetup';
 import GamePlay from './game/GamePlay';
 import ScoreBoard from './game/ScoreBoard';
+import Config from './config';
 
 const track = () => {
+  if (!process.env.NODE_ENV === 'development') return;
+  
   const referrer = document.referrer;
   const browser = _.get(window, 'navigator.appName');
   const platform = _.get(window, 'navigator.platform');
-  fetch('https://sf27prmmu5.execute-api.us-east-1.amazonaws.com/dev/session/start', {
+  fetch(Config.aticsUrl, {
     method: 'POST',
     body: JSON.stringify({
       referrer, platform, browser,
     }),
-  })
+  });
 };
 
 function App() {
-  useEffect(() => {
-    track();
-  });
+  console.log('process.env', process.env)
+  useEffect(track);
   const [ gameSetup, setGameSetup ] = useState(null);
   const [ gameScoreBoard, setGameScoreBoard ] = useState(null);
 
@@ -30,12 +32,12 @@ function App() {
     setGameScoreBoard(null);
   };
 
-  const gameOver = (scoreBoard) => {
-    setGameScoreBoard(scoreBoard);
+  const gameOver = (scoreboard) => {
+    setGameScoreBoard(scoreboard);
   };
 
   return gameScoreBoard
-    ? <ScoreBoard scoreBoard={gameScoreBoard} restart={restart} />
+    ? <ScoreBoard scoreboard={gameScoreBoard} restart={restart} />
     : gameSetup && !gameSetup.transitionActive
     ? <GamePlay {...{ gameSetup, restart, gameOver }} />
     : <GameSetup onSetupDone={ setGameSetup }  />;
