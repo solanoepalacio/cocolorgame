@@ -1,8 +1,12 @@
 import { Button, Grid, Typography } from '@material-ui/core';
 import _ from 'lodash';
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import styles from './game-play.module.css';
 import FrameTransition from '../../components/FrameTransition';
+import useSound from 'use-sound';
+
+import beep from '../../sounds/beep.mp3';
+import chimes from '../../sounds/chimes.mp3';
 
 const getInteractionName = (event) => {
   const { type, code } = event;
@@ -24,45 +28,76 @@ const updateScoreBoard = (scoreBoard, color, hit) => {
   return newScoreBoard;
 };
 
-const createTransitionStatus = () => {
-  return { active: false, hit: false };
-};
+export default function GamePlay({ gameSetup: { boardColorConfig, questionSet, frameTransitionDelay, questionTimeoutSecs = 2 }, restart, gameOver }) {
 
-export default function GamePlay({ gameSetup: { boardColorConfig, questionSet, frameTransitionDelay }, restart, gameOver }) {
+  const [playBeep] = useSound(beep);
+  const [playChimes] = useSound(chimes);
+
   const [questionIndex, setQuestionIndex] = useState(0);
   const [scoreBoard, setScoreBoard] = useState(buildScore(questionSet));
-  const [transitionStatus, setTransitionStatus] = useState(createTransitionStatus())
-  const question = _.get(questionSet, questionIndex);
-  // console.log('gameplay received boardColorConfig', boardColorConfig);
-  const onInteraction = async (event) => {
-    if (transitionStatus.active) return;
-    console.log('comparing with boardColorConfig', boardColorConfig);
-    const interactionName = getInteractionName(event);
-    if (!Object.keys(boardColorConfig).includes(interactionName) || !question) return;
 
-    const colorPicked = _.get(boardColorConfig, interactionName);
-    const isHit = colorPicked === question.color;
-    console.log('question, pick, hit', question.color, colorPicked, isHit);
+  const transitionStatusRef = useRef({ active: false, hit: false });
+  const [transitionStatus, setTransitionStatus] = useState({ active: false, hit: false });
+
+  const updateTransitionStatus = (newStatus) => {
+    transitionStatusRef.current = newStatus;
+    setTransitionStatus(newStatus);
+  };
+
+  const question = _.get(questionSet, questionIndex);
+
+  const nextFrame = (isHit, noDelay) => {
+    if (isHit) playChimes()
+    else playBeep();
 
     const newScoreBoard = updateScoreBoard(scoreBoard, question.color, isHit);
     setScoreBoard(newScoreBoard);
 
-    setTransitionStatus({ active: true, hit: isHit });
+    updateTransitionStatus({ active: true, hit: isHit });
     setTimeout(() => setQuestionIndex(questionIndex + 1), 0);
 
-    const frameTransitionTime = Math.max(frameTransitionDelay, isHit ? 900 : 120);
+    const frameTransitionTime = noDelay ? 120 : Math.max(frameTransitionDelay, isHit ? 900 : 120);
 
-    setTimeout(() => setTransitionStatus({ active: false }), frameTransitionTime);
+    setTimeout(() => {
+      updateTransitionStatus({ active: false, isHit: null });
+    }, frameTransitionTime);
+  };
+
+  const questionTimeoutRef = useRef(null);
+  const onInteraction = async (event) => {
+    if (transitionStatusRef.active) return;
+    const interactionName = getInteractionName(event);
+    if (!Object.keys(boardColorConfig).includes(interactionName) || !question) return;
+
+    if (questionTimeoutRef.current) {
+      clearTimeout(questionTimeoutRef.current)
+    }
+
+    const colorPicked = _.get(boardColorConfig, interactionName);
+    const isHit = colorPicked === question.color;
+
+    nextFrame(isHit, false);
   };
 
   useEffect(() => {
+    if (questionIndex === 0) {
+      console.log('boardColorConfig', boardColorConfig);
+    }
+
     document.addEventListener('click', onInteraction);
     document.addEventListener('keydown', onInteraction);
+
+    if (questionIndex < questionSet.length && !transitionStatus.active) {
+      questionTimeoutRef.current = setTimeout(() => {
+        nextFrame(false, true);
+      }, questionTimeoutSecs * 1000);
+    }
+
     return () => {
       document.removeEventListener('click', onInteraction);
       document.removeEventListener('keydown', onInteraction);
     }
-  });
+  }, [questionIndex, transitionStatus]);
 
   if (!question && !transitionStatus.active) {
     gameOver(scoreBoard);
@@ -70,20 +105,21 @@ export default function GamePlay({ gameSetup: { boardColorConfig, questionSet, f
   }
 
   const handleRestart = (e) => {
+    if (questionTimeoutRef.current) clearTimeout(questionTimeoutRef.current)
     e.stopPropagation();
     restart();
   };
-  console.log('next question is', question);
+
   return (
     <div className={styles.container}>
       <Grid container spacing={4} justify="center">
         <Grid container item xs={8} justify="flex-end">
           <Typography>{questionIndex} / {questionSet.length}</Typography>
         </Grid>
-        <Grid className={ styles.container} container item xs={12} justify="center" alignItems="center" >
-            {
-              transitionStatus.active ? <FrameTransition isHit={transitionStatus.hit}/> : <div className={styles.imageContainer} style={{ backgroundImage: `url(${question.image})` }}></div>
-            }
+        <Grid className={styles.container} container item xs={12} justify="center" alignItems="center" >
+          {
+            transitionStatus.active ? <FrameTransition isHit={transitionStatus.hit} /> : <div className={styles.imageContainer} style={{ backgroundImage: `url(${question.image})` }}></div>
+          }
         </Grid>
         <Grid container item xs={12} justify="center">
           <Button variant="contained" color="secondary" onClick={handleRestart}>restart</Button>

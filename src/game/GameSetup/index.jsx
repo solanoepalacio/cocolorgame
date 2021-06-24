@@ -127,7 +127,6 @@ export default function GameSetup({ onSetupDone }) {
     Space: 'yellow',
     Click: 'orange',
   });
-  console.log('new board color config', boardColorConfig);
 
   const [ questionsCount, setQuestionsCount ] = useState(4);
   const [ frameTransitionDelay, setFrameTransitionDelay ] = useState(120);
