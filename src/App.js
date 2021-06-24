@@ -22,6 +22,7 @@ function App() {
   useEffect(() => {
     track();
   });
+  
   const [ gameSetup, setGameSetup ] = useState(null);
   const [ gameScoreBoard, setGameScoreBoard ] = useState(null);
 

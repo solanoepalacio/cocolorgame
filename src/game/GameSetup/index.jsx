@@ -2,7 +2,7 @@ import _ from 'lodash';
 import React, { useState } from 'react';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
-import { Button, Typography, TextField, Menu } from '@material-ui/core';
+import { Button, Typography, Input, Menu } from '@material-ui/core';
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import PopupState, { bindTrigger, bindMenu } from 'material-ui-popup-state';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
@@ -51,8 +51,14 @@ const createGame = (questionsCount, boardColorConfig) => {
 const useStyles = makeStyles((theme) => ({
   paper: {
     padding: theme.spacing(2),
-    textAlign: 'center',
+    
     color: theme.palette.text.secondary,
+  },
+  colorButton: {
+    padding: theme.spacing(1),
+  },
+  imageContainer: {
+    textAlign: 'center',
   },
   modal: {
     display: 'flex',
@@ -85,13 +91,13 @@ const ColorPicker = ({ interactionName, color, setColor, direction = "row" }) =>
 
   const classes = useStyles();
   const Icon = iconsByInteractionName[interactionName];
-  const fontSize = '52px';
+  const fontSize = '36px';
   return (
     <Grid container justify="space-around" alignItems="center" justify={direction === "column" ? "center" : undefined} item>
       <PopupState variant="popover" popupId='somecrazyid'>
         {(popupState) => (
           <React.Fragment>
-            <Paper className={[classes.paper, classes.clickable].join(' ')} {...bindTrigger(popupState)}>
+            <Paper className={[classes.colorButton, classes.clickable].join(' ')} {...bindTrigger(popupState)}>
               <Grid container alignItems="center" direction={direction}>
                 <Icon style={{ color, fontSize }} />
               </Grid>
@@ -128,8 +134,9 @@ export default function GameSetup({ onSetupDone }) {
     Click: 'orange',
   });
 
-  const [ questionsCount, setQuestionsCount ] = useState(4);
-  const [ frameTransitionDelay, setFrameTransitionDelay ] = useState(120);
+  const [questionsCount, setQuestionsCount] = useState(4);
+  const [questionTimeoutSecs, setQuestionTimeoutSecs] = useState(3);
+  const [frameTransitionDelay, setFrameTransitionDelay] = useState(120);
 
   const classes = useStyles();
 
@@ -141,23 +148,31 @@ export default function GameSetup({ onSetupDone }) {
     });
   };
 
+  const handleStartGame = () => onSetupDone({
+    boardColorConfig,
+    questionTimeoutSecs,
+    frameTransitionDelay,
+    questionSet: createGame(questionsCount, boardColorConfig),
+  });
+
   return (
     <Grid container spacing={3} justify="center" alignItems="center" item xs={12}>
       <Grid container justify="center" item xs={12}>
         <Typography variant="h2">Game Setup</Typography>
       </Grid>
-      <Grid container spacing={3} justify="center" alignItems="center">
-        <Grid item xs={6}>
-          <Paper className={classes.paper} >
-            <img width="720" src={boardImage} alt="" />
+
+      <Grid container xs={12} spacing={3} justify="center" alignItems="center">
+      
+        <Grid item md={8} lg={6}>
+          <Paper className={classes.imageContainer} >
+            <img width="600" src={boardImage} alt="" />
           </Paper>
         </Grid>
 
-        <Grid container spacing={7} item xs={6}>
-          <Grid container item xs={12} justify="center">
-
+        <Grid container justify="center" item md={6} lg={3}>
+          <Grid container item xs={10} >
             {/* Arrow Buttons */}
-            <Grid container spacing={2} item xs={6}>
+            <Grid container spacing={2} item xs={8}>
               <Grid container item xs={12} justify="center">
                 <ColorPicker
                   direction="column"
@@ -194,7 +209,7 @@ export default function GameSetup({ onSetupDone }) {
             </Grid>
 
             {/* Space + Click */}
-            <Grid container spacing={2} item xs={3}>
+            <Grid container spacing={2} item xs={4}>
               <Grid container item xs={6}>
                 <ColorPicker
                   interactionName="Space"
@@ -211,52 +226,69 @@ export default function GameSetup({ onSetupDone }) {
               </Grid>
             </Grid>
           </Grid>
+        </Grid>
 
-          <Grid item xs={12}>
+        <Grid item md={6} lg={3}>
             <Paper className={classes.paper}>
               <Grid container>
-                <Grid container justify="space-around" item xs={6}>
-                  <Typography>Pictures/Color:</Typography>
-                  <TextField
-                    color="secondary"
-                    type="number"
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    value={questionsCount}
-                    onChange={(e) => setQuestionsCount(e.target.value)}
-                  />
+                <Grid container justify="space-between" item xs={12}>
+                  <Grid md={8} lg={6}><Typography>Pictures per color:</Typography></Grid>
+                  <Grid md={4} lg={3}>
+                    <Input
+                      color="secondary"
+                      type="number"
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      value={questionsCount}
+                      onChange={(e) => setQuestionsCount(e.target.value)}
+                    />
+                  </Grid>
                 </Grid>
-                <Grid container justify="space-around" item xs={6}>
-                  <Typography>Frame Transition Delay (ms):</Typography>
-                  <TextField
-                    color="secondary"
-                    type="number"
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    value={frameTransitionDelay}
-                    onChange={(e) => setFrameTransitionDelay(e.target.value)}
-                  />
+                <Grid container justify="space-between" item xs={12}>
+                  <Grid md={8} lg={6}><Typography>Frame transition delay (ms):</Typography></Grid>
+                  <Grid md={4} lg={3}>
+                    <Input
+                      color="secondary"
+                      type="number"
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      value={frameTransitionDelay}
+                      onChange={(e) => setFrameTransitionDelay(e.target.value)}
+                    />
+                  </Grid>
+                </Grid>
+                <Grid container justify="space-between" item xs={12}>
+                  <Grid md={8} lg={6}><Typography>Time to answer (secs):</Typography></Grid>
+                  <Grid md={4} lg={3}>
+                    <Input
+                      color="secondary"
+                      type="number"
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      value={questionTimeoutSecs}
+                      onChange={(e) => setQuestionTimeoutSecs(e.target.value)}
+                    />
+                  </Grid>
                 </Grid>
               </Grid>
             </Paper>
           </Grid>
-        </Grid>
-
         <Grid item xs={12} container direction="column" alignItems="center">
           <Button
             variant="contained"
             color="secondary"
-            onClick={() => onSetupDone({ questionSet: createGame(questionsCount, boardColorConfig), boardColorConfig, frameTransitionDelay })}>start game
+            onClick={handleStartGame}>start game
                 </Button>
         </Grid>
       </Grid>
-      <div className={styles.watermarkLayout}>
+      {/* <div className={styles.watermarkLayout}>
         <Grid container justify="center" alignItems="center">
           <Typography variant="subtitle1" style={{ color: "gray" }} >Coded with&nbsp;</Typography><FavoriteIcon style={{ color: 'black' }} /><Typography style={{ color: "gray" }}>&nbsp;for Cocó</Typography>
         </Grid>
-      </div>
+      </div> */}
     </Grid>
   );
 };

@@ -28,8 +28,7 @@ const updateScoreBoard = (scoreBoard, color, hit) => {
   return newScoreBoard;
 };
 
-export default function GamePlay({ gameSetup: { boardColorConfig, questionSet, frameTransitionDelay, questionTimeoutSecs = 2 }, restart, gameOver }) {
-
+export default function GamePlay({ gameSetup: { boardColorConfig, questionSet, frameTransitionDelay, questionTimeoutSecs }, restart, gameOver }) {
   const [playBeep] = useSound(beep);
   const [playChimes] = useSound(chimes);
 
@@ -82,6 +81,8 @@ export default function GamePlay({ gameSetup: { boardColorConfig, questionSet, f
   useEffect(() => {
     if (questionIndex === 0) {
       console.log('boardColorConfig', boardColorConfig);
+      // the following beep wont be heard. For some reason sounds are played from the second time and on :shrug:
+      playBeep();
     }
 
     document.addEventListener('click', onInteraction);
