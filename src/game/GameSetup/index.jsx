@@ -28,6 +28,9 @@ const imagesByColor = {
   purple: requireColorImages('purple'),
   yellow: requireColorImages('yellow'),
   orange: requireColorImages('orange'),
+  pink: requireColorImages('pink'),
+  brown: requireColorImages('brown'),
+  black: requireColorImages('black'),
 };
 
 const pickRandom = (array) => array.splice((Math.random() * array.length) | 0, 1)[0];
@@ -44,7 +47,7 @@ const createGame = (questionsCount, boardColorConfig) => {
     return questions.concat(colorImages);
   }, []);
   const a = _.shuffle(gameQuestions);
-  console.log('gamequestions', a);
+  console.log('Game Questions:', a);
   return a;
 };
 
